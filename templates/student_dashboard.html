@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Student Dashboard</h3>
+
+<h5>Available Drives</h5>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Job</th>
+        <th>Eligibility</th>
+        <th>Deadline</th>
+        <th>Apply</th>
+    </tr>
+
+    {% for d in drives %}
+    <tr>
+        <td>{{ d.id }}</td>
+        <td>{{ d.job_title }}</td>
+        <td>{{ d.eligibility }}</td>
+        <td>{{ d.deadline }}</td>
+        <td>
+            <a href="/apply/{{ d.id }}" class="btn btn-primary btn-sm">Apply</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h5>Your Applications</h5>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Job</th>
+        <th>Status</th>
+    </tr>
+
+    {% for a in applications %}
+    <tr>
+        <td>{{ a.job_title }}</td>
+        <td>{{ a.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/student/edit_profile" class="btn btn-warning mb-3">
+Update Profile
+</a>
+{% endblock %}

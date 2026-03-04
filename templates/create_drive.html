@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Create Drive</h3>
+
+<form method="POST">
+    <input type="text" name="job" placeholder="Job Title" class="form-control mb-2" required>
+    <textarea name="desc" placeholder="Description" class="form-control mb-2" required></textarea>
+    <input type="text" name="elig" placeholder="Eligibility" class="form-control mb-2" required>
+    <input type="date" name="deadline" class="form-control mb-2" required>
+
+    <button class="btn btn-success">Create</button>
+</form>
+
+{% endblock %}

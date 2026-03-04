@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Drive Applications</h3>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Student Name</th>
+<th>Email</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+
+{% for a in applications %}
+
+<tr>
+
+<td>{{ a.name }}</td>
+
+<td>{{ a.email }}</td>
+
+<td>
+
+{% if a.status == "Applied" %}
+<span class="badge bg-primary">Applied</span>
+
+{% elif a.status == "Shortlisted" %}
+<span class="badge bg-warning">Shortlisted</span>
+
+{% elif a.status == "Rejected" %}
+<span class="badge bg-danger">Rejected</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+<a href="/company/applications/{{ drive_id }}"
+class="btn btn-info btn-sm">
+View
+</a>
+
+<a href="/company/shortlist/{{ a.id }}/{{ drive_id }}"
+class="btn btn-success btn-sm">
+Shortlist
+</a>
+
+<a href="/company/reject/{{ a.id }}/{{ drive_id }}"
+class="btn btn-danger btn-sm">
+Reject
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<a href="/company" class="btn btn-secondary">
+Back
+</a>
+
+{% endblock %}

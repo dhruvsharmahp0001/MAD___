@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Login</h3>
+
+<form method="POST">
+    <div class="mb-3">
+        <label>Role</label>
+        <select name="role" class="form-control">
+            <option value="admin">Admin</option>
+            <option value="student">Student</option>
+            <option value="company">Company</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <input type="text" name="email" placeholder="Email / Username" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <input type="password" name="password" placeholder="Password" class="form-control" required>
+    </div>
+
+    <button class="btn btn-primary">Login</button>
+</form>
+
+<hr>
+
+<a href="/register_student">Register Student</a> |
+<a href="/register_company">Register Company</a>
+
+{% endblock %}

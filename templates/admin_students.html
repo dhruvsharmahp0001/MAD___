@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Manage Students</h3>
+
+<table class="table table-bordered">
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+{% for s in students %}
+
+<tr>
+<td>{{ s.id }}</td>
+<td>{{ s.name }}</td>
+<td>{{ s.email }}</td>
+
+<td>
+{% if s.is_active == 1 %}
+Active
+{% else %}
+Blacklisted
+{% endif %}
+</td>
+
+<td>
+
+{% if s.is_active == 1 %}
+
+<a href="/admin/blacklist_student/{{ s.id }}"
+class="btn btn-danger btn-sm">
+Blacklist
+</a>
+
+{% else %}
+
+<a href="/admin/activate_student/{{ s.id }}"
+class="btn btn-success btn-sm">
+Activate
+</a>
+
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

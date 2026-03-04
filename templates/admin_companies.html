@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Company Approvals</h3>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for c in companies %}
+    <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.company_name }}</td>
+        <td>{{ c.approval_status }}</td>
+        <td>
+            <a href="/admin/approve_company/{{ c.id }}" class="btn btn-success btn-sm">Approve</a>
+            <a href="/admin/reject_company/{{ c.id }}" class="btn btn-danger btn-sm">Reject</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
+
+{% endblock %}

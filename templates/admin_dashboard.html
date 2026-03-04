@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Admin Dashboard</h3>
+
+<div class="row text-center">
+
+    <div class="col-md-3">
+        <a href="/admin/students" style="text-decoration:none;">
+            <div class="card p-3">
+                Students
+                <h4>{{ students }}</h4>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="/admin/companies" style="text-decoration:none;">
+            <div class="card p-3">
+                Companies
+                <h4>{{ companies }}</h4>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="/admin/drives" style="text-decoration:none;">
+            <div class="card p-3">
+                Drives
+                <h4>{{ drives }}</h4>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="/admin/applications" style="text-decoration:none;">
+            <div class="card p-3">
+                Applications
+                <h4>{{ applications }}</h4>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

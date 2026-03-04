@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Company Dashboard</h3>
+
+<a href="/create_drive" class="btn btn-primary mb-3">Create Drive</a>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Job Title</th>
+        <th>Status</th>
+    </tr>
+
+    {% for d in drives %}
+    <tr>
+        <td>{{ d.id }}</td>
+        <td>{{ d.job_title }}</td>
+        <td>{{ d.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<table class="table table-bordered">
+
+<tr>
+<th>ID</th>
+<th>Job Title</th>
+<th>Status</th>
+<th>Applications</th>
+</tr>
+
+{% for d in drives %}
+
+<tr>
+
+<td>{{ d.id }}</td>
+<td>{{ d.job_title }}</td>
+<td>{{ d.status }}</td>
+
+<td>
+<a href="/company/applications/{{ d.id }}"
+class="btn btn-primary btn-sm">
+View
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}
