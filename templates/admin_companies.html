@@ -2,7 +2,22 @@
 {% block content %}
 
 <h3>Company Approvals</h3>
+<form method="GET" action="/admin/companies" class="mb-3">
 
+<div class="input-group">
+
+<input type="text"
+name="search"
+class="form-control"
+placeholder="Search company by name or ID">
+
+<button class="btn btn-primary">
+Search
+</button>
+
+</div>
+
+</form>
 <table class="table table-bordered">
     <tr>
         <th>ID</th>
@@ -13,6 +28,7 @@
 
     {% for c in companies %}
     <tr>
+        <td>{{ c.company_uid }}</td>
         <td>{{ c.id }}</td>
         <td>{{ c.company_name }}</td>
         <td>{{ c.approval_status }}</td>

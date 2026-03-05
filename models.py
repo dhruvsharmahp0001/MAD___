@@ -22,6 +22,7 @@ def create_tables():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS student(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_uid TEXT UNIQUE,
         name TEXT,
         email TEXT UNIQUE,
         password TEXT,
@@ -34,6 +35,7 @@ def create_tables():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS company(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_uid TEXT UNIQUE,
         company_name TEXT,
         hr_contact TEXT,
         email TEXT UNIQUE,
@@ -47,6 +49,7 @@ def create_tables():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS drive(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        drive_uid TEXT UNIQUE,
         company_id INTEGER,
         job_title TEXT,
         job_description TEXT,

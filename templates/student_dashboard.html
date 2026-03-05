@@ -16,10 +16,12 @@
 
     {% for d in drives %}
     <tr>
-        <td>{{ d.id }}</td>
+        <td>{{ d.drive_uid }}</td>
+        
         <td>{{ d.job_title }}</td>
         <td>{{ d.eligibility }}</td>
         <td>{{ d.deadline }}</td>
+        
         <td>
             <a href="/apply/{{ d.id }}" class="btn btn-primary btn-sm">Apply</a>
         </td>

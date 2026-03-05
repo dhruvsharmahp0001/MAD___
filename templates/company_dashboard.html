@@ -14,9 +14,11 @@
 
     {% for d in drives %}
     <tr>
-        <td>{{ d.id }}</td>
+        <td>{{ d.drive_uid }}</td>
+        
         <td>{{ d.job_title }}</td>
         <td>{{ d.status }}</td>
+        
     </tr>
     {% endfor %}
 </table>
@@ -33,7 +35,7 @@
 
 <tr>
 
-<td>{{ d.id }}</td>
+<td>{{ d.drive_uid }}</td>
 <td>{{ d.job_title }}</td>
 <td>{{ d.status }}</td>
 

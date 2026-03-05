@@ -1,8 +1,20 @@
 from flask import Flask, render_template, request, redirect, session
 from models import create_tables, get_connection
 import os
+import random
+import string
 
+def generate_student_uid():
+    digits = ''.join(random.choices(string.digits, k=4))
+    return f"S{digits}"
 
+def generate_company_uid():
+    digits = ''.join(random.choices(string.digits, k=4))
+    return f"C{digits}"
+
+def generate_drive_uid():
+    digits = ''.join(random.choices(string.digits, k=4))
+    return f"D{digits}"
 app = Flask(__name__)
 app.secret_key = "secretkey"
 
@@ -86,11 +98,24 @@ def admin_dashboard():
 
 @app.route("/admin/companies")
 def admin_companies():
-    if session.get("role")!="admin":
+
+    if session.get("role") != "admin":
         return redirect("/")
 
+    search = request.args.get("search")
+
     conn = get_connection()
-    companies = conn.execute("SELECT * FROM company").fetchall()
+
+    if search:
+        companies = conn.execute("""
+        SELECT * FROM company
+        WHERE company_name LIKE ? OR company_uid LIKE ?
+        """, (f"%{search}%", f"%{search}%")).fetchall()
+    else:
+        companies = conn.execute("SELECT * FROM company").fetchall()
+
+    conn.close()
+
     return render_template("admin_companies.html", companies=companies)
 
 
@@ -125,11 +150,24 @@ def admin_drives():
 
 @app.route("/admin/students")
 def admin_students():
+
     if session.get("role") != "admin":
         return redirect("/")
 
+    search = request.args.get("search")
+
     conn = get_connection()
-    students = conn.execute("SELECT * FROM student").fetchall()
+
+    if search:
+        students = conn.execute("""
+        SELECT * FROM student
+        WHERE name LIKE ? OR email LIKE ? OR student_uid LIKE ?
+        """, (f"%{search}%", f"%{search}%", f"%{search}%")).fetchall()
+    else:
+        students = conn.execute("SELECT * FROM student").fetchall()
+
+    conn.close()
+
     return render_template("admin_students.html", students=students)
 
 @app.route("/admin/applications")
@@ -167,12 +205,13 @@ def register_company():
         website = request.form["website"]
 
         conn = get_connection()
-        conn.execute(
-            """INSERT INTO company 
-            (company_name,hr_contact,email,password,website)
-            VALUES (?,?,?,?,?)""",
-            (company_name,hr_contact,email,password,website)
-        )
+        company_uid = generate_company_uid()
+
+        conn.execute("""
+    INSERT INTO company
+    (company_uid,company_name,hr_contact,email,password,website)
+VALUES (?,?,?,?,?,?)
+""",(company_uid,company_name,hr_contact,email,password,website))
         conn.commit()
         conn.close()
 
@@ -203,9 +242,13 @@ def create_drive():
         deadline=request.form["deadline"]
 
         conn=get_connection()
-        conn.execute("""INSERT INTO drive(company_id,job_title,job_description,eligibility,deadline)
-                        VALUES(?,?,?,?,?)""",
-                     (company_id,job,desc,elig,deadline))
+        drive_uid = generate_drive_uid()
+
+        conn.execute("""
+INSERT INTO drive
+(drive_uid,company_id,job_title,job_description,eligibility,deadline)
+VALUES (?,?,?,?,?,?)
+    """,(drive_uid,company_id,job,desc,elig,deadline))
         conn.commit()
         return redirect("/company")
 
@@ -224,10 +267,12 @@ def register_student():
         phone = request.form["phone"]
 
         conn = get_connection()
-        conn.execute(
-            "INSERT INTO student (name,email,password,phone) VALUES (?,?,?,?)",
-            (name,email,password,phone)
-        )
+        student_uid = generate_student_uid()
+
+        conn.execute("""
+        INSERT INTO student (student_uid,name,email,password,phone)
+        VALUES (?,?,?,?,?)
+        """,(student_uid,name,email,password,phone))
         conn.commit()
         conn.close()
 
