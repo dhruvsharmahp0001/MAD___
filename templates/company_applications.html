@@ -17,7 +17,6 @@
 <tr>
 
 <td>{{ a.name }}</td>
-
 <td>{{ a.email }}</td>
 
 <td>
@@ -26,7 +25,10 @@
 <span class="badge bg-primary">Applied</span>
 
 {% elif a.status == "Shortlisted" %}
-<span class="badge bg-warning">Shortlisted</span>
+<span class="badge bg-warning text-dark">Shortlisted</span>
+
+{% elif a.status == "Selected" %}
+<span class="badge bg-success">Selected</span>
 
 {% elif a.status == "Rejected" %}
 <span class="badge bg-danger">Rejected</span>
@@ -37,14 +39,14 @@
 
 <td>
 
-<a href="/company/applications/{{ drive_id }}"
-class="btn btn-info btn-sm">
-View
-</a>
-
 <a href="/company/shortlist/{{ a.id }}/{{ drive_id }}"
 class="btn btn-success btn-sm">
 Shortlist
+</a>
+
+<a href="/company/select/{{ a.id }}/{{ drive_id }}"
+class="btn btn-primary btn-sm">
+Select
 </a>
 
 <a href="/company/reject/{{ a.id }}/{{ drive_id }}"
@@ -60,8 +62,6 @@ Reject
 
 </table>
 
-<a href="/company" class="btn btn-secondary">
-Back
-</a>
+<a href="/company" class="btn btn-secondary">Back</a>
 
 {% endblock %}

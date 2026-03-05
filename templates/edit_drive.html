@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Edit Placement Drive</h3>
+
+<form method="POST">
+
+<div class="mb-3">
+<label>Job Title</label>
+<input type="text"
+name="job_title"
+value="{{ drive.job_title }}"
+class="form-control"
+required>
+</div>
+
+<div class="mb-3">
+<label>Job Description</label>
+<textarea
+name="job_description"
+class="form-control"
+required>{{ drive.job_description }}</textarea>
+</div>
+
+<div class="mb-3">
+<label>Eligibility Criteria</label>
+<input type="text"
+name="eligibility"
+value="{{ drive.eligibility }}"
+class="form-control"
+required>
+</div>
+
+<div class="mb-3">
+<label>Application Deadline</label>
+<input type="date"
+name="deadline"
+value="{{ drive.deadline }}"
+class="form-control"
+required>
+</div>
+
+<button class="btn btn-success">
+Update Drive
+</button>
+
+<a href="/company" class="btn btn-secondary">
+Cancel
+</a>
+
+</form>
+
+{% endblock %}

@@ -3,32 +3,31 @@
 
 <h3>Company Dashboard</h3>
 
-<a href="/create_drive" class="btn btn-primary mb-3">Create Drive</a>
+<h5>Company Details</h5>
 
-<table class="table table-bordered">
-    <tr>
-        <th>ID</th>
-        <th>Job Title</th>
-        <th>Status</th>
-    </tr>
+<p><b>Name:</b> {{ company.company_name }}</p>
+<p><b>Email:</b> {{ company.email }}</p>
+<p><b>Website:</b> {{ company.website }}</p>
 
-    {% for d in drives %}
-    <tr>
-        <td>{{ d.drive_uid }}</td>
-        
-        <td>{{ d.job_title }}</td>
-        <td>{{ d.status }}</td>
-        
-    </tr>
-    {% endfor %}
-</table>
+<a href="/company/edit_profile" class="btn btn-warning mb-3">
+Update Profile
+</a>
+
+<hr>
+
+<a href="/create_drive" class="btn btn-primary mb-3">
+Create Placement Drive
+</a>
+
 <table class="table table-bordered">
 
 <tr>
-<th>ID</th>
+<th>Drive ID</th>
 <th>Job Title</th>
+<th>Deadline</th>
 <th>Status</th>
-<th>Applications</th>
+<th>Applicants</th>
+<th>Actions</th>
 </tr>
 
 {% for d in drives %}
@@ -37,13 +36,28 @@
 
 <td>{{ d.drive_uid }}</td>
 <td>{{ d.job_title }}</td>
+<td>{{ d.deadline }}</td>
 <td>{{ d.status }}</td>
+<td>{{ d.applicants }}</td>
 
 <td>
-<a href="/company/applications/{{ d.id }}"
-class="btn btn-primary btn-sm">
+
+<a href="/company/applications/{{ d.id }}" class="btn btn-info btn-sm">
 View
 </a>
+
+<a href="/company/edit_drive/{{ d.id }}" class="btn btn-warning btn-sm">
+Edit
+</a>
+
+<a href="/company/delete_drive/{{ d.id }}" class="btn btn-danger btn-sm">
+Delete
+</a>
+
+<a href="/company/close_drive/{{ d.id }}" class="btn btn-dark btn-sm">
+Close
+</a>
+
 </td>
 
 </tr>

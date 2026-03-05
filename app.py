@@ -220,13 +220,33 @@ VALUES (?,?,?,?,?,?)
     return render_template("register_company.html")
 @app.route("/company")
 def company_dashboard():
-    if session.get("role")!="company":
+
+    if session.get("role") != "company":
         return redirect("/")
 
-    company_id=session["user_id"]
-    conn=get_connection()
-    drives=conn.execute("SELECT * FROM drive WHERE company_id=?",(company_id,)).fetchall()
-    return render_template("company_dashboard.html",drives=drives)
+    company_id = session["user_id"]
+
+    conn = get_connection()
+
+    company = conn.execute(
+        "SELECT * FROM company WHERE id=?",
+        (company_id,)
+    ).fetchone()
+
+    drives = conn.execute("""
+    SELECT drive.*,
+    (SELECT COUNT(*) FROM application WHERE drive_id = drive.id) AS applicants
+    FROM drive
+    WHERE company_id = ?
+    """,(company_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "company_dashboard.html",
+        company=company,
+        drives=drives
+    )
 
 
 @app.route("/create_drive",methods=["GET","POST"])
@@ -253,7 +273,120 @@ VALUES (?,?,?,?,?,?)
         return redirect("/company")
 
     return render_template("create_drive.html")
+@app.route("/company/edit_drive/<int:id>", methods=["GET","POST"])
+def edit_drive(id):
 
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    if request.method == "POST":
+
+        job = request.form["job_title"]
+        desc = request.form["job_description"]
+        elig = request.form["eligibility"]
+        deadline = request.form["deadline"]
+
+        conn.execute("""
+        UPDATE drive
+        SET job_title=?, job_description=?, eligibility=?, deadline=?
+        WHERE id=?
+        """,(job,desc,elig,deadline,id))
+
+        conn.commit()
+
+        return redirect("/company")
+
+    drive = conn.execute(
+        "SELECT * FROM drive WHERE id=?",
+        (id,)
+    ).fetchone()
+
+    return render_template("edit_drive.html", drive=drive)
+
+
+@app.route("/company/delete_drive/<int:id>")
+def delete_drive(id):
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute("DELETE FROM drive WHERE id=?", (id,))
+    conn.commit()
+
+    return redirect("/company")
+
+
+@app.route("/company/close_drive/<int:id>")
+def close_drive(id):
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute(
+        "UPDATE drive SET status='Closed' WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+
+    return redirect("/company")
+
+
+@app.route("/company/select/<int:app_id>/<int:drive_id>")
+def select_student(app_id, drive_id):
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute(
+        "UPDATE application SET status='Selected' WHERE id=?",
+        (app_id,)
+    )
+
+    conn.commit()
+
+    return redirect(f"/company/applications/{drive_id}")
+
+@app.route("/company/edit_profile", methods=["GET","POST"])
+def company_edit_profile():
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    company_id = session["user_id"]
+
+    conn = get_connection()
+
+    if request.method == "POST":
+
+        name = request.form["company_name"]
+        hr = request.form["hr_contact"]
+        website = request.form["website"]
+
+        conn.execute("""
+        UPDATE company
+        SET company_name=?, hr_contact=?, website=?
+        WHERE id=?
+        """,(name,hr,website,company_id))
+
+        conn.commit()
+
+        return redirect("/company")
+
+    company = conn.execute(
+        "SELECT * FROM company WHERE id=?",
+        (company_id,)
+    ).fetchone()
+
+    return render_template("company_edit_profile.html", company=company)
 # ======================
 # STUDENT DASHBOARD
 # ======================
@@ -290,13 +423,19 @@ def student_dashboard():
     conn=get_connection()
 
     drives=conn.execute("SELECT * FROM drive WHERE status='Approved'").fetchall()
-
+    conn.execute("""
+UPDATE drive
+SET status='Closed'
+WHERE deadline < date('now') AND status='Approved'
+""")
+    conn.commit()
     applications=conn.execute("""
         SELECT drive.job_title, application.status 
         FROM application
         JOIN drive ON drive.id=application.drive_id
         WHERE application.student_id=?
     """,(student_id,)).fetchall()
+
     
 
     return render_template("student_dashboard.html",
