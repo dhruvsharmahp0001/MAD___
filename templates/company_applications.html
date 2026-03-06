@@ -11,13 +11,14 @@
 <th>Email</th>
 <th>Status</th>
 <th>Actions</th>
+<!-- <th>Resume</th> -->
 </tr>
 
 {% for a in applications %}
 
 <tr>
 
-<td>A{{ a.application_uid }}</td>
+<td>{{ a.application_uid }}</td>
 <td>{{ a.name }}</td>
 <td>{{ a.email }}</td>
 
@@ -38,21 +39,23 @@
 
 <td>
 
-<a href="/company/shortlist/{{ a.application_id }}/{{ drive_id }}" class="btn btn-success btn-sm">
+
+<a href="/company/shortlist/{{ a.id }}" class="btn btn-warning btn-sm">
 Shortlist
 </a>
 
-<a href="/company/select/{{ a.application_id }}/{{ drive_id }}" class="btn btn-primary btn-sm">
+<a href="/company/select/{{ a.id }}" class="btn btn-success btn-sm">
 Select
 </a>
 
-<a href="/company/reject/{{ a.application_id }}/{{ drive_id }}" class="btn btn-danger btn-sm">
+<a href="/company/reject/{{ a.id }}" class="btn btn-danger btn-sm">
 Reject
 </a>
 
+
+
 </td>
 
-</tr>
 
 {% endfor %}
 

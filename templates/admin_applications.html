@@ -5,15 +5,20 @@
 
 <table class="table table-bordered">
 <tr>
-<th>ID</th>
+<th>Application ID</th>
+<th>Drive ID</th>
+<th>Student ID</th>
 <th>Student</th>
-<th>Drive</th>
+<th>Role</th>
 <th>Status</th>
+
 </tr>
 
 {% for a in applications %}
 <tr>
 <td>{{ a.application_uid }}</td>
+<td>{{a.drive_uid}}</td>
+<td>{{a.student_uid}}</td>
 <td>{{ a.name }}</td>
 <td>{{ a.job_title }}</td>
 <td>{{ a.status }}</td>

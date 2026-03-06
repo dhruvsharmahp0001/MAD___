@@ -23,8 +23,12 @@ Search
 <tr>
 <th>Company ID</th>
 <th>Company Name</th>
-<th>Status</th>
+<th>Approval Status</th>
 <th>Action</th>
+
+<th>Status</th>
+<th></th>
+<!-- <th></th> -->
 </tr>
 
 {% for c in companies %}
@@ -53,14 +57,31 @@ Reject
 
 {% if c.is_active == 1 %}
 
-<a href="/admin/blacklist_company/{{ c.id }}"
+<span class="badge bg-success">
+Active
+</span>
+
+{% else %}
+
+<span class="badge bg-danger">
+Blacklisted
+</span>
+
+{% endif %}
+
+</td>
+<td>
+
+{% if c.is_active == 1 %}
+
+<a href="/admin/blacklist_company/{{ c.id }}" 
 class="btn btn-danger btn-sm">
 Blacklist
 </a>
 
 {% else %}
 
-<a href="/admin/activate_company/{{ c.id }}"
+<a href="/admin/activate_company/{{ c.id }}" 
 class="btn btn-success btn-sm">
 Activate
 </a>
