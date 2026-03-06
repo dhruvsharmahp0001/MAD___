@@ -191,7 +191,31 @@ def approve_drive(id):
     conn.execute("UPDATE drive SET status='Approved' WHERE id=?", (id,))
     conn.commit()
     return redirect("/admin/drives")
+@app.route("/admin/activate_student/<int:id>")
+def activate_student(id):
 
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+    conn.execute("UPDATE student SET is_active = 1 WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/students")
+
+@app.route("/admin/blacklist_student/<int:id>")
+def blacklist_student(id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+    conn.execute("UPDATE student SET is_active = 0 WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/students")
 # ======================
 # COMPANY DASHBOARD
 # ======================
@@ -387,6 +411,51 @@ def company_edit_profile():
     ).fetchone()
 
     return render_template("company_edit_profile.html", company=company)
+
+@app.route("/company/applications/<int:drive_id>")
+def company_applications(drive_id):
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    applications = conn.execute("""
+    SELECT application.id, student.name, student.email,
+           application.status
+    FROM application
+    JOIN student ON student.id = application.student_id
+    WHERE application.drive_id = ?
+    """,(drive_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "company_applications.html",
+        applications=applications,
+        drive_id=drive_id
+    )
+
+
+@app.route("/company/shortlist/<int:app_id>/<int:drive_id>")
+def shortlist_student(app_id, drive_id):
+
+    if session.get("role") != "company":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute(
+        "UPDATE application SET status='Shortlisted' WHERE id=?",
+        (app_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(f"/company/applications/{drive_id}")
+
+    return render_template("edit_profile.html", student=student)
 # ======================
 # STUDENT DASHBOARD
 # ======================
@@ -459,32 +528,6 @@ def apply_drive(drive_id):
 
     return redirect("/student")
 
-@app.route("/admin/blacklist_student/<int:id>")
-def blacklist_student(id):
-
-    if session.get("role") != "admin":
-        return redirect("/")
-
-    conn = get_connection()
-    conn.execute("UPDATE student SET is_active = 0 WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect("/admin/students")
-
-@app.route("/admin/activate_student/<int:id>")
-def activate_student(id):
-
-    if session.get("role") != "admin":
-        return redirect("/")
-
-    conn = get_connection()
-    conn.execute("UPDATE student SET is_active = 1 WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-
-    return redirect("/admin/students")
-
 @app.route("/student/edit_profile", methods=["GET","POST"])
 def edit_profile():
 
@@ -517,47 +560,6 @@ def edit_profile():
 
     conn.close()
 
-@app.route("/company/applications/<int:drive_id>")
-def company_applications(drive_id):
 
-    if session.get("role") != "company":
-        return redirect("/")
-
-    conn = get_connection()
-
-    applications = conn.execute("""
-    SELECT application.id, student.name, student.email,
-           application.status
-    FROM application
-    JOIN student ON student.id = application.student_id
-    WHERE application.drive_id = ?
-    """,(drive_id,)).fetchall()
-
-    conn.close()
-
-    return render_template(
-        "company_applications.html",
-        applications=applications,
-        drive_id=drive_id
-    )
-@app.route("/company/shortlist/<int:app_id>/<int:drive_id>")
-def shortlist_student(app_id, drive_id):
-
-    if session.get("role") != "company":
-        return redirect("/")
-
-    conn = get_connection()
-
-    conn.execute(
-        "UPDATE application SET status='Shortlisted' WHERE id=?",
-        (app_id,)
-    )
-
-    conn.commit()
-    conn.close()
-
-    return redirect(f"/company/applications/{drive_id}")
-
-    return render_template("edit_profile.html", student=student)
 if __name__=="__main__":
     app.run(debug=True, port=5001)
