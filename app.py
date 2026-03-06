@@ -15,6 +15,11 @@ def generate_company_uid():
 def generate_drive_uid():
     digits = ''.join(random.choices(string.digits, k=4))
     return f"D{digits}"
+def generate_application_uid():
+    digits = ''.join(random.choices(string.digits, k=4))
+    return f"A{digits}"
+
+
 app = Flask(__name__)
 app.secret_key = "secretkey"
 
@@ -53,9 +58,11 @@ def login():
                 return redirect("/student")
 
         elif role == "company":
-            cur.execute("""SELECT * FROM company 
-                           WHERE email=? AND password=? 
-                           AND approval_status='Approved' AND is_active=1""",
+            cur.execute(   """SELECT * FROM company 
+WHERE email=? 
+AND password=? 
+AND approval_status='Approved'
+AND is_active=1""",
                         (email,password))
             user = cur.fetchone()
             if user:
@@ -216,6 +223,42 @@ def blacklist_student(id):
     conn.close()
 
     return redirect("/admin/students")
+
+@app.route("/admin/blacklist_company/<int:id>")
+def blacklist_company(id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute(
+        "UPDATE company SET is_active=0 WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/companies")
+
+@app.route("/admin/activate_company/<int:id>")
+def activate_company(id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute(
+        "UPDATE company SET is_active=1 WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/companies")
 # ======================
 # COMPANY DASHBOARD
 # ======================
@@ -419,14 +462,16 @@ def company_applications(drive_id):
         return redirect("/")
 
     conn = get_connection()
-
     applications = conn.execute("""
-    SELECT application.id, student.name, student.email,
-           application.status
-    FROM application
-    JOIN student ON student.id = application.student_id
-    WHERE application.drive_id = ?
-    """,(drive_id,)).fetchall()
+SELECT 
+    application.id AS application_id,
+    student.name,
+    student.email,
+    application.status
+FROM application
+JOIN student ON student.id = application.student_id
+WHERE application.drive_id = ?
+""", (drive_id,)).fetchall()
 
     conn.close()
 
@@ -498,12 +543,15 @@ SET status='Closed'
 WHERE deadline < date('now') AND status='Approved'
 """)
     conn.commit()
-    applications=conn.execute("""
-        SELECT drive.job_title, application.status 
-        FROM application
-        JOIN drive ON drive.id=application.drive_id
-        WHERE application.student_id=?
-    """,(student_id,)).fetchall()
+    applications = conn.execute("""
+SELECT 
+    application.id AS application_id,
+    drive.job_title,
+    application.status
+FROM application
+JOIN drive ON drive.id = application.drive_id
+WHERE application.student_id = ?
+""", (student_id,)).fetchall()
 
     
 

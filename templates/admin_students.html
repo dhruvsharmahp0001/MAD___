@@ -21,7 +21,7 @@ Search
 <table class="table table-bordered">
 
 <tr>
-<th>ID</th>
+<th>Student ID</th>
 <th>Name</th>
 <th>Email</th>
 <th>Status</th>
@@ -31,8 +31,8 @@ Search
 {% for s in students %}
 
 <tr>
+
 <td>{{ s.student_uid }}</td>
-<td>{{ s.id }}</td>
 <td>{{ s.name }}</td>
 <td>{{ s.email }}</td>
 
@@ -48,15 +48,13 @@ Blacklisted
 
 {% if s.is_active == 1 %}
 
-<a href="/admin/blacklist_student/{{ s.id }}"
-class="btn btn-danger btn-sm">
+<a href="/admin/blacklist_student/{{ s.id }}" class="btn btn-danger btn-sm">
 Blacklist
 </a>
 
 {% else %}
 
-<a href="/admin/activate_student/{{ s.id }}"
-class="btn btn-success btn-sm">
+<a href="/admin/activate_student/{{ s.id }}" class="btn btn-success btn-sm">
 Activate
 </a>
 

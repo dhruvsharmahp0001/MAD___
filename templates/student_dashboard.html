@@ -35,16 +35,26 @@
 
 <table class="table table-bordered">
     <tr>
+        <th>Application ID</th>
         <th>Job</th>
+        <!-- <th>Drive</th> -->
         <th>Status</th>
+        <!-- <th>Job</th> -->
+        <!-- <th>Status</th> -->
+        
     </tr>
 
     {% for a in applications %}
-    <tr>
-        <td>{{ a.job_title }}</td>
-        <td>{{ a.status }}</td>
-    </tr>
-    {% endfor %}
+
+<tr>
+
+<td>A{{ a.application_id }}</td>
+<td>{{ a.job_title }}</td>
+<td>{{ a.status }}</td>
+
+</tr>
+
+{% endfor %}
 </table>
 
 <a href="/student/edit_profile" class="btn btn-warning mb-3">
