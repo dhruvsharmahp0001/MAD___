@@ -566,10 +566,15 @@ def apply_drive(drive_id):
         return redirect("/")
 
     student_id=session["user_id"]
+    application_uid = generate_application_uid()
+
     conn=get_connection()
     try:
-        conn.execute("INSERT INTO application(student_id,drive_id) VALUES(?,?)",
-                     (student_id,drive_id))
+        conn.execute("""
+INSERT INTO application
+(application_uid, student_id, drive_id)
+VALUES (?,?,?)
+""",(application_uid, student_id, drive_id))
         conn.commit()
     except:
         return "Already Applied"

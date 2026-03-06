@@ -19,7 +19,33 @@
 <td>{{ d.job_title }}</td>
 <td>{{ d.status }}</td>
 <td>
-<a href="/admin/approve_drive/{{ d.id }}" class="btn btn-success btn-sm">Approve</a>
+
+{% if d.status == "Pending" %}
+
+<a href="/admin/approve_drive/{{ d.id }}" 
+class="btn btn-success btn-sm">
+Approve
+</a>
+
+<a href="/admin/reject_drive/{{ d.id }}" 
+class="btn btn-danger btn-sm">
+Reject
+</a>
+
+{% elif d.status == "Approved" %}
+
+<span class="badge bg-success">
+Approved
+</span>
+
+{% elif d.status == "Closed" %}
+
+<span class="badge bg-dark">
+Closed
+</span>
+
+{% endif %}
+
 </td>
 </tr>
 {% endfor %}

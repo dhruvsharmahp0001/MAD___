@@ -60,15 +60,15 @@ def create_tables():
     """)
 
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS application(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id INTEGER,
-        drive_id INTEGER,
-        status TEXT DEFAULT 'Applied',
-        UNIQUE(student_id, drive_id)
-    )
-    """)
-
+CREATE TABLE IF NOT EXISTS application(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_uid TEXT UNIQUE,
+    student_id INTEGER,
+    drive_id INTEGER,
+    status TEXT DEFAULT 'Applied',
+    UNIQUE(student_id, drive_id)
+)
+""")
     # Default admin
     cur.execute("SELECT * FROM admin WHERE username='admin'")
     if not cur.fetchone():
