@@ -48,9 +48,17 @@ Closed
 {% endif %}
 
 </td>
+<td>
+<a href="/admin/drive/{{ d.id }}" class="btn btn-info btn-sm">
+View Details
+</a>
+</td>
 </tr>
 {% endfor %}
 
 </table>
+<a href="/admin" class="btn btn-secondary mt-3">
+Back
+</a>
 
 {% endblock %}

@@ -195,19 +195,19 @@ def admin_applications():
     conn = get_connection()
 
     applications = conn.execute("""
-    SELECT 
-        application.application_uid,
-        drive.drive_uid,
-        student.student_uid,
-        student.name,
-        drive.job_title,
-        application.status
-    FROM application
-    JOIN student ON student.id = application.student_id
-    JOIN drive ON drive.id = application.drive_id
-    """).fetchall()
-
-    conn.close()
+SELECT 
+application.application_uid,
+drive.drive_uid,
+student.student_uid,
+student.name,
+drive.job_title,
+company.company_name,
+application.status
+FROM application
+JOIN student ON student.id = application.student_id
+JOIN drive ON drive.id = application.drive_id
+JOIN company ON company.id = drive.company_id
+""").fetchall()
 
     return render_template(
         "admin_applications.html",
@@ -287,7 +287,96 @@ def activate_company(company_id):
 
     return redirect("/admin/companies")
 
+@app.route("/admin/company/<int:company_id>")
+def admin_company_details(company_id):
 
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    company = conn.execute(
+        "SELECT * FROM company WHERE id=?",
+        (company_id,)
+    ).fetchone()
+
+    drives = conn.execute(
+        "SELECT * FROM drive WHERE company_id=?",
+        (company_id,)
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_company_details.html",
+        company=company,
+        drives=drives
+    )
+
+@app.route("/admin/student/<int:student_id>")
+def admin_student_details(student_id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    student = conn.execute(
+        "SELECT * FROM student WHERE id=?",
+        (student_id,)
+    ).fetchone()
+
+    applications = conn.execute("""
+    SELECT application.application_uid,
+           drive.drive_uid,
+           drive.job_title,
+           application.status,
+           application.applied_on
+    FROM application
+    JOIN drive ON drive.id = application.drive_id
+    WHERE application.student_id=?
+    """,(student_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_student_details.html",
+        student=student,
+        applications=applications
+    )
+
+@app.route("/admin/drive/<int:drive_id>")
+def admin_drive_details(drive_id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    drive = conn.execute("""
+    SELECT drive.*, company.company_name
+    FROM drive
+    JOIN company ON company.id = drive.company_id
+    WHERE drive.id=?
+    """,(drive_id,)).fetchone()
+
+    applications = conn.execute("""
+    SELECT application.application_uid,
+           student.student_uid,
+           student.name,
+           application.status
+    FROM application
+    JOIN student ON student.id = application.student_id
+    WHERE application.drive_id=?
+    """,(drive_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_drive_details.html",
+        drive=drive,
+        applications=applications
+    )
 # ======================
 # COMPANY DASHBOARD
 # ======================
@@ -302,12 +391,11 @@ def register_company():
 
         conn = get_connection()
         company_uid = generate_company_uid()
-
+        description = request.form["description"]
         conn.execute("""
-    INSERT INTO company
-    (company_uid,company_name,hr_contact,email,password,website)
-VALUES (?,?,?,?,?,?)
-""",(company_uid,company_name,hr_contact,email,password,website))
+INSERT INTO company(company_uid,company_name,hr_contact,email,password,website,description)
+VALUES(?,?,?,?,?,?,?)
+""",(company_uid,company_name,hr_contact,email,password,website,description))
         conn.commit()
         conn.close()
 

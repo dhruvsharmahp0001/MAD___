@@ -7,6 +7,7 @@
 <tr>
 <th>Application ID</th>
 <th>Drive ID</th>
+<th>Company</th>
 <th>Student ID</th>
 <th>Student</th>
 <th>Role</th>
@@ -17,8 +18,9 @@
 {% for a in applications %}
 <tr>
 <td>{{ a.application_uid }}</td>
-<td>{{a.drive_uid}}</td>
-<td>{{a.student_uid}}</td>
+<td>{{ a.drive_uid }}</td>
+<td>{{ a.company_name }}</td>
+<td>{{ a.student_uid }}</td>
 <td>{{ a.name }}</td>
 <td>{{ a.job_title }}</td>
 <td>{{ a.status }}</td>
@@ -26,5 +28,7 @@
 {% endfor %}
 
 </table>
-
+<a href="/admin" class="btn btn-secondary mt-3">
+Back
+</a>
 {% endblock %}

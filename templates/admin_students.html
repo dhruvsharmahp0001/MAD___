@@ -26,6 +26,7 @@ Search
 <th>Email</th>
 <th>Status</th>
 <th>Action</th>
+<th>Details</th>
 </tr>
 
 {% for s in students %}
@@ -61,11 +62,19 @@ Activate
 {% endif %}
 
 </td>
+<td>
+<a href="/admin/student/{{ s.id }}" class="btn btn-info btn-sm">
+View Details
+</a>
+</td>
 
 </tr>
 
 {% endfor %}
 
 </table>
+<a href="/admin" class="btn btn-secondary mt-3">
+Back
+</a>
 
 {% endblock %}

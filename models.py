@@ -33,18 +33,19 @@ def create_tables():
     """)
 
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS company(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        company_uid TEXT UNIQUE,
-        company_name TEXT,
-        hr_contact TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        website TEXT,
-        approval_status TEXT DEFAULT 'Pending',
-        is_active INTEGER DEFAULT 1
-    )
-    """)
+CREATE TABLE IF NOT EXISTS company(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_uid TEXT,
+    company_name TEXT,
+    hr_contact TEXT,
+    email TEXT UNIQUE,
+    password TEXT,
+    website TEXT,
+    description TEXT,
+    approval_status TEXT DEFAULT 'Pending',
+    is_active INTEGER DEFAULT 1
+)
+""")
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS drive(
