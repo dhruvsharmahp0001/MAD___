@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session,send_from_directory
 from models import create_tables, get_connection
+from datetime import datetime
 import os
 import random
 import string
@@ -15,6 +16,7 @@ def generate_company_uid():
 def generate_drive_uid():
     digits = ''.join(random.choices(string.digits, k=4))
     return f"D{digits}"
+
 def generate_application_uid():
     digits = ''.join(random.choices(string.digits, k=4))
     return f"A{digits}"
@@ -25,8 +27,10 @@ app.secret_key = "secretkey"
 
 create_tables()
 
-UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+UPLOAD_FOLDER = "uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 # file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
 
@@ -492,8 +496,6 @@ JOIN student ON student.id = application.student_id
 WHERE application.drive_id=?
 """,(drive_id,)).fetchall()
 
-    conn.close()
-
     return render_template(
         "company_applications.html",
         applications=applications,
@@ -557,9 +559,7 @@ def reject_student(application_id):
 
     return redirect(request.referrer)
 
-@app.route("/uploads/<filename>")
-def uploaded_file(filename):
-    return send_from_directory("uploads", filename)
+
 # STUDENT DASHBOARD
 # ======================
 
@@ -609,61 +609,86 @@ WHERE drive.status='Approved'
     conn.commit()
     applications = conn.execute("""
 SELECT 
-    application.id AS application_id,
-    drive.job_title,
-    application.status
+application.application_uid,
+drive.job_title,
+application.status,
+application.applied_on
 FROM application
 JOIN drive ON drive.id = application.drive_id
-WHERE application.student_id = ?
-""", (student_id,)).fetchall()
+WHERE application.student_id=?
+""",(student_id,)).fetchall()
 
-    
+    student = conn.execute(
+    "SELECT * FROM student WHERE id=?",
+    (student_id,)
+).fetchone()
+    return render_template(
+    "student_dashboard.html",
+    student=student,
+    drives=drives,
+    applications=applications
+)
 
-    return render_template("student_dashboard.html",
-                           drives=drives,
-                           applications=applications)
+@app.route("/apply/<drive_uid>")
+def apply_drive(drive_uid):
 
-
-@app.route("/apply/<int:drive_id>")
-def apply_drive(drive_id):
-    if session.get("role")!="student":
+    if session.get("role") != "student":
         return redirect("/")
 
-    student_id=session["user_id"]
+    student_id = session["user_id"]
+
+    conn = get_connection()
+
+    drive = conn.execute(
+        "SELECT id FROM drive WHERE drive_uid=?",
+        (drive_uid,)
+    ).fetchone()
+
+    # check already applied
+    existing = conn.execute("""
+    SELECT * FROM application
+    WHERE student_id=? AND drive_id=?
+    """,(student_id,drive["id"])).fetchone()
+
+    if existing:
+        conn.close()
+        return redirect("/student")
+
     application_uid = generate_application_uid()
 
-    conn=get_connection()
-    try:
-        conn.execute("""
-INSERT INTO application
-(application_uid, student_id, drive_id)
-VALUES (?,?,?)
-""",(application_uid, student_id, drive_id))
-        conn.commit()
-    except:
-        return "Already Applied"
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    conn.execute("""
+    INSERT INTO application(application_uid,student_id,drive_id,status,applied_on)
+    VALUES(?,?,?,?,?)
+    """,(application_uid,student_id,drive["id"],"Applied",today))
+
+    conn.commit()
+    conn.close()
 
     return redirect("/student")
 
-@app.route("/student/edit_profile", methods=["GET","POST"])
+@app.route("/student/edit_profile", methods=["GET", "POST"])
 def edit_profile():
 
     if session.get("role") != "student":
         return redirect("/")
 
     student_id = session["user_id"]
+
     conn = get_connection()
 
     if request.method == "POST":
 
         name = request.form["name"]
+        email = request.form["email"]
         phone = request.form["phone"]
 
         conn.execute("""
         UPDATE student
-        SET name=?, phone=?
+        SET name=?, email=?, phone=?
         WHERE id=?
-        """,(name,phone,student_id))
+        """,(name,email,phone,student_id))
 
         conn.commit()
         conn.close()
@@ -677,15 +702,28 @@ def edit_profile():
 
     conn.close()
 
-@app.route("/student/upload_resume", methods=["POST"])
-def upload_resume():
+    return render_template(
+        "edit_profile.html",
+        student=student
+    )
+
+@app.route("/student/update_resume", methods=["POST"])
+def update_resume():
+
+    if session.get("role") != "student":
+        return redirect("/")
+
+    student_id = session["user_id"]
 
     file = request.files["resume"]
 
     if file:
 
         filename = file.filename
-        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+        path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+        file.save(path)
 
         conn = get_connection()
 
@@ -693,12 +731,15 @@ def upload_resume():
         UPDATE student
         SET resume=?
         WHERE id=?
-        """,(filename, session["user_id"]))
+        """,(filename,student_id))
 
         conn.commit()
         conn.close()
 
     return redirect("/student")
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 if __name__=="__main__":
     app.run(debug=True, port=5001)

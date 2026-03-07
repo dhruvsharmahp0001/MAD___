@@ -38,7 +38,6 @@
     <tr>
         <th>Application ID</th>
         <th>Job</th>
-        
         <th>Status</th>
         <th>Applied On</th>
         
@@ -48,9 +47,10 @@
 
 <tr>
 
-<td>A{{ a.application_uid }}</td>
+<td>{{ a.application_uid }}</td>
 <td>{{ a.job_title }}</td>
 <td>{{ a.status }}</td>
+<td>{{a.applied_on}}</td>
 
 </tr>
 
@@ -70,4 +70,21 @@ Upload Resume
 </button>
 
 </form>
+<h4>Your Resume</h4>
+
+{% if student.resume %}
+
+<a href="/uploads/{{ student.resume }}" 
+target="_blank"
+class="btn btn-success">
+
+View Resume
+
+</a>
+
+{% else %}
+
+<p>No resume uploaded</p>
+
+{% endif %}
 {% endblock %}
