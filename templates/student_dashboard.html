@@ -3,65 +3,17 @@
 
 <h3>Student Dashboard</h3>
 
-<h5>Available Drives</h5>
+<h5>Student Details</h5>
 
-<table class="table table-bordered">
-    <tr>
-        <th>Drive ID</th>
-        <th>Company</th>
-        <th>Job</th>
-        <th>Eligibility</th>
-        <th>Deadline</th>
-        <th>Apply</th>
-    </tr>
-
-    {% for d in drives %}
-    <tr>
-        <td>{{ d.drive_uid }}</td>
-        <td>{{d.company_name}}</td>
-        <td>{{ d.job_title }}</td>
-        <td>{{ d.eligibility }}</td>
-        <td>{{ d.deadline }}</td>
-        
-        <td>
-            <a href="/apply/{{ d.drive_uid }}" class="btn btn-primary btn-sm">Apply</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-<hr>
-
-<h5>Your Applications</h5>
-
-<table class="table table-bordered">
-    <tr>
-        <th>Application ID</th>
-        <th>Job</th>
-        <th>Status</th>
-        <th>Applied On</th>
-        
-    </tr>
-
-    {% for a in applications %}
-
-<tr>
-
-<td>{{ a.application_uid }}</td>
-<td>{{ a.job_title }}</td>
-<td>{{ a.status }}</td>
-<td>{{a.applied_on}}</td>
-
-</tr>
-
-{% endfor %}
-</table>
+<p><b>Name:</b> {{ student.name }}</p>
+<p><b>Email:</b> {{ student.email }}</p>
+<p><b>Phone:</b> {{ student.phone }}</p>
 
 <a href="/student/edit_profile" class="btn btn-warning mb-3">
 Update Profile
 </a>
 
-<form action="/student/update_resume" method="POST" enctype="multipart/form-data">
+<form action="/student/update_resume" method="POST" enctype="multipart/form-data" class="mb-3">
 
 <input type="file" name="resume" required>
 
@@ -70,21 +22,128 @@ Upload Resume
 </button>
 
 </form>
-<h4>Your Resume</h4>
 
 {% if student.resume %}
 
-<a href="/uploads/{{ student.resume }}" 
-target="_blank"
-class="btn btn-success">
-
+<a href="/uploads/{{ student.resume }}" target="_blank" class="btn btn-success mb-3">
 View Resume
-
 </a>
+
+{% endif %}
+
+<hr>
+
+<h4>Available Drives</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Drive ID</th>
+<th>Company</th>
+<th>Job</th>
+<th>Eligibility</th>
+<th>Deadline</th>
+<th>Apply</th>
+</tr>
+
+{% for d in drives %}
+
+<tr>
+
+<td>{{ d.drive_uid }}</td>
+<td>{{ d.company_name }}</td>
+<td>{{ d.job_title }}</td>
+<td>{{ d.eligibility }}</td>
+<td>{{ d.deadline }}</td>
+
+<td>
+
+{% if d.status == "Closed" %}
+
+<button class="btn btn-dark btn-sm" disabled>
+Closed
+</button>
+
+{% elif d.applied %}
+
+<button class="btn btn-success btn-sm" disabled>
+Already Applied
+</button>
 
 {% else %}
 
-<p>No resume uploaded</p>
+<a href="/apply/{{ d.drive_uid }}" class="btn btn-primary btn-sm">
+Apply
+</a>
 
 {% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<hr>
+
+<h4>Your Applications</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Application ID</th>
+<th>Job</th>
+<th>Status</th>
+<th>Applied On</th>
+</tr>
+
+{% for a in applications %}
+
+<tr>
+
+<td>{{ a.application_uid }}</td>
+<td>{{ a.job_title }}</td>
+<td>{{ a.status }}</td>
+<td>{{ a.applied_on }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<hr>
+
+<h4>Placement History</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Application ID</th>
+<th>Drive ID</th>
+<th>Company</th>
+<th>Role</th>
+<th>Applied On</th>
+<th>Status</th>
+</tr>
+
+{% for h in history %}
+
+<tr>
+
+<td>{{ h.application_uid }}</td>
+<td>{{ h.drive_uid }}</td>
+<td>{{ h.company_name }}</td>
+<td>{{ h.job_title }}</td>
+<td>{{ h.applied_on }}</td>
+<td>Placed</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
 {% endblock %}

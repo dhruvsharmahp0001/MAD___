@@ -175,16 +175,26 @@ def admin_students():
     conn = get_connection()
 
     if search:
+
         students = conn.execute("""
         SELECT * FROM student
-        WHERE name LIKE ? OR email LIKE ? OR student_uid LIKE ?
-        """, (f"%{search}%", f"%{search}%", f"%{search}%")).fetchall()
+        WHERE name LIKE ?
+        OR student_uid LIKE ?
+        OR phone LIKE ?
+        """,('%'+search+'%','%'+search+'%','%'+search+'%')).fetchall()
+
     else:
-        students = conn.execute("SELECT * FROM student").fetchall()
+
+        students = conn.execute("""
+        SELECT * FROM student
+        """).fetchall()
 
     conn.close()
 
-    return render_template("admin_students.html", students=students)
+    return render_template(
+        "admin_students.html",
+        students=students
+    )
 
 @app.route("/admin/applications")
 def admin_applications():
@@ -676,46 +686,72 @@ def register_student():
 
 @app.route("/student")
 def student_dashboard():
-    if session.get("role")!="student":
+
+    if session.get("role") != "student":
         return redirect("/")
 
-    student_id=session["user_id"]
-    conn=get_connection()
+    student_id = session["user_id"]
 
-    drives=conn.execute("SELECT * FROM drive WHERE status='Approved'").fetchall()
+    conn = get_connection()
+
+    # Get student info
+    student = conn.execute(
+        "SELECT * FROM student WHERE id=?",
+        (student_id,)
+    ).fetchone()
+
+    # Available drives
     drives = conn.execute("""
 SELECT 
-drive.drive_uid,
-drive.job_title,
-drive.eligibility,
-drive.deadline,
-company.company_name
+    drive.id,
+    drive.drive_uid,
+    drive.job_title,
+    drive.eligibility,
+    drive.deadline,
+    drive.status,
+    company.company_name,
+    application.id AS applied
 FROM drive
 JOIN company ON company.id = drive.company_id
+LEFT JOIN application 
+    ON application.drive_id = drive.id 
+    AND application.student_id = ?
 WHERE drive.status='Approved'
-""").fetchall()
-    conn.commit()
-    applications = conn.execute("""
-SELECT 
-application.application_uid,
-drive.job_title,
-application.status,
-application.applied_on
-FROM application
-JOIN drive ON drive.id = application.drive_id
-WHERE application.student_id=?
 """,(student_id,)).fetchall()
 
-    student = conn.execute(
-    "SELECT * FROM student WHERE id=?",
-    (student_id,)
-).fetchone()
+    # Student applications
+    applications = conn.execute("""
+    SELECT application.application_uid,
+           drive.job_title,
+           application.status,
+           application.applied_on
+    FROM application
+    JOIN drive ON drive.id = application.drive_id
+    WHERE application.student_id=?
+    """,(student_id,)).fetchall()
+
+    # Placement history
+    history = conn.execute("""
+    SELECT application.application_uid,
+           drive.drive_uid,
+           company.company_name,
+           drive.job_title,
+           application.applied_on
+    FROM application
+    JOIN drive ON drive.id = application.drive_id
+    JOIN company ON company.id = drive.company_id
+    WHERE application.student_id=? AND application.status='Selected'
+    """,(student_id,)).fetchall()
+
+    conn.close()
+
     return render_template(
-    "student_dashboard.html",
-    student=student,
-    drives=drives,
-    applications=applications
-)
+        "student_dashboard.html",
+        student=student,
+        drives=drives,
+        applications=applications,
+        history=history
+    )
 
 @app.route("/apply/<drive_uid>")
 def apply_drive(drive_uid):
