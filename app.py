@@ -830,7 +830,6 @@ def edit_profile():
         "edit_profile.html",
         student=student
     )
-
 @app.route("/student/update_resume", methods=["POST"])
 def update_resume():
 
@@ -839,17 +838,32 @@ def update_resume():
 
     student_id = session["user_id"]
 
+    conn = get_connection()
+
+    student = conn.execute(
+        "SELECT resume FROM student WHERE id=?",
+        (student_id,)
+    ).fetchone()
+
     file = request.files["resume"]
 
     if file:
 
-        filename = file.filename
+        # Allow only PDF
+        if not file.filename.endswith(".pdf"):
+            conn.close()
+            return "Only PDF resumes are allowed"
 
+        filename = f"S{student_id}.pdf"
         path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
-        file.save(path)
+        # delete old resume if exists
+        if student["resume"]:
+            old_path = os.path.join(app.config["UPLOAD_FOLDER"], student["resume"])
+            if os.path.exists(old_path):
+                os.remove(old_path)
 
-        conn = get_connection()
+        file.save(path)
 
         conn.execute("""
         UPDATE student
@@ -858,7 +872,8 @@ def update_resume():
         """,(filename,student_id))
 
         conn.commit()
-        conn.close()
+
+    conn.close()
 
     return redirect("/student")
 @app.route("/uploads/<filename>")

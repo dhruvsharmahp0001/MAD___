@@ -13,9 +13,11 @@
 Update Profile
 </a>
 
-<form action="/student/update_resume" method="POST" enctype="multipart/form-data" class="mb-3">
+<form action="/student/update_resume" method="POST" enctype="multipart/form-data">
 
-<input type="file" name="resume" required>
+<label>Upload Resume (PDF only)</label>
+
+<input type="file" name="resume" accept=".pdf" required>
 
 <button class="btn btn-primary">
 Upload Resume
