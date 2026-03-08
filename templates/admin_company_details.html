@@ -110,7 +110,7 @@ Placement Drives Created
 <th>Job Title</th>
 <th>Eligibility</th>
 <th>Deadline</th>
-<th>Status</th>
+
 </tr>
 
 {% for d in drives %}
@@ -125,20 +125,7 @@ Placement Drives Created
 
 <td>{{ d.deadline }}</td>
 
-<td>
 
-{% if d.status == "Approved" %}
-<span class="badge bg-success">Approved</span>
-
-{% elif d.status == "Pending" %}
-<span class="badge bg-warning text-dark">Pending</span>
-
-{% else %}
-<span class="badge bg-dark">Closed</span>
-
-{% endif %}
-
-</td>
 
 </tr>
 

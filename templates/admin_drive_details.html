@@ -15,12 +15,12 @@
 
 <p><b>Deadline:</b> {{ drive.deadline }}</p>
 
-<p><b>Status:</b> {{ drive.status }}</p>
+<p><b>Admin Status:</b> {{ drive.status }}</p>
 
 {% if drive.is_deleted == 1 %}
-<p><b>Drive Status:</b> Deleted</p>
+<p><b>Drive Status by Company:</b> Deleted</p>
 {% else %}
-<p><b>Drive Status:</b> Active</p>
+<p><b>Drive Status by Company:</b> Active</p>
 {% endif %}
 
 <br>

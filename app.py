@@ -466,7 +466,6 @@ def register_company():
         email = request.form["email"]
         password = request.form["password"]
         website = request.form["website"]
-
         conn = get_connection()
         company_uid = generate_company_uid()
         description = request.form["description"]
@@ -480,6 +479,8 @@ VALUES(?,?,?,?,?,?,?)
         return redirect("/")
 
     return render_template("register_company.html")
+
+
 @app.route("/company")
 def company_dashboard():
 
@@ -492,7 +493,7 @@ def company_dashboard():
 
     # Company details
     company = conn.execute("""
-    SELECT company_uid, company_name, email, website
+    SELECT company_uid, company_name, email, website, hr_contact
     FROM company
     WHERE id=?
     """,(company_id,)).fetchone()
@@ -523,6 +524,7 @@ def company_dashboard():
         drives=drives,
         deleted_drives=deleted_drives
     )
+
 @app.route("/create_drive",methods=["GET","POST"])
 def create_drive():
     if session.get("role")!="company":

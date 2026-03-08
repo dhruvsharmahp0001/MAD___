@@ -2,12 +2,13 @@
 {% block content %}
 
 <h3>Company Dashboard</h3>
-
+<br>
 <h5>Company Details</h5>
-
+<br>
 <p><b>Company ID:</b> {{ company.company_uid }}</p>
-<p><b>Name:</b> {{ company.company_name }}</p>
+<p><b>Company Name:</b> {{ company.company_name }}</p>
 <p><b>Email:</b> {{ company.email }}</p>
+<p><b>HR Contact:</b> {{ company.hr_contact }}</p>
 <p><b>Website:</b> {{ company.website }}</p>
 
 <a href="/company/edit_profile" class="btn btn-warning mb-3">
