@@ -5,6 +5,7 @@
 
 <h5>Company Details</h5>
 
+<p><b>Company ID:</b> {{ company.company_uid }}</p>
 <p><b>Name:</b> {{ company.company_name }}</p>
 <p><b>Email:</b> {{ company.email }}</p>
 <p><b>Website:</b> {{ company.website }}</p>
@@ -18,6 +19,8 @@ Update Profile
 <a href="/create_drive" class="btn btn-primary mb-3">
 Create Placement Drive
 </a>
+
+<h5>Active Drives</h5>
 
 <table class="table table-bordered">
 
@@ -58,6 +61,37 @@ Delete
 Close
 </a>
 
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<hr>
+
+<h5>Deleted Drives History</h5>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Drive ID</th>
+<th>Job Title</th>
+<th>Deadline</th>
+<th>Status</th>
+</tr>
+
+{% for d in deleted_drives %}
+
+<tr>
+
+<td>{{ d.drive_uid }}</td>
+<td>{{ d.job_title }}</td>
+<td>{{ d.deadline }}</td>
+
+<td>
+<span style="color:red;">Deleted</span>
 </td>
 
 </tr>

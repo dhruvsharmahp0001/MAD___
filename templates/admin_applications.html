@@ -4,6 +4,7 @@
 <h3>All Applications</h3>
 
 <table class="table table-bordered">
+
 <tr>
 <th>Application ID</th>
 <th>Drive ID</th>
@@ -11,24 +12,68 @@
 <th>Student ID</th>
 <th>Student</th>
 <th>Role</th>
+<th>Applied On</th>
 <th>Status</th>
-
+<th>Drive Status</th>
 </tr>
 
 {% for a in applications %}
+
 <tr>
+
 <td>{{ a.application_uid }}</td>
+
 <td>{{ a.drive_uid }}</td>
+
 <td>{{ a.company_name }}</td>
+
 <td>{{ a.student_uid }}</td>
+
 <td>{{ a.name }}</td>
+
 <td>{{ a.job_title }}</td>
-<td>{{ a.status }}</td>
+
+<td>{{ a.applied_on }}</td>
+
+<td>
+
+{% if a.status == "Applied" %}
+<span class="badge bg-primary">Applied</span>
+
+{% elif a.status == "Shortlisted" %}
+<span class="badge bg-warning">Shortlisted</span>
+
+{% elif a.status == "Selected" %}
+<span class="badge bg-success">Selected</span>
+
+{% elif a.status == "Rejected" %}
+<span class="badge bg-danger">Rejected</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if a.is_deleted == 1 %}
+<span class="badge bg-danger">Deleted</span>
+
+{% elif a.drive_status == "Closed" %}
+<span class="badge bg-secondary">Closed</span>
+
+{% else %}
+<span class="badge bg-success">Active</span>
+
+{% endif %}
+
+</td>
+
 </tr>
+
 {% endfor %}
 
 </table>
-<a href="/admin" class="btn btn-secondary mt-3">
-Back
-</a>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
+
 {% endblock %}

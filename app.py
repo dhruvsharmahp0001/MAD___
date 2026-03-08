@@ -34,9 +34,9 @@ if not os.path.exists(UPLOAD_FOLDER):
 # file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
 
-# ======================
+
 # LOGIN
-# ======================
+
 @app.route("/", methods=["GET","POST"])
 def login():
     if request.method == "POST":
@@ -85,9 +85,9 @@ def logout():
     return redirect("/")
 
 
-# ======================
+
 # ADMIN DASHBOARD
-# ======================
+
 @app.route("/admin")
 def admin_dashboard():
     if session.get("role")!="admin":
@@ -116,12 +116,24 @@ def admin_companies():
     if session.get("role") != "admin":
         return redirect("/")
 
+    search = request.args.get("search")
+
     conn = get_connection()
 
-    companies = conn.execute("""
-    SELECT id, company_uid, company_name, approval_status, is_active
-    FROM company
-    """).fetchall()
+    if search:
+
+        companies = conn.execute("""
+        SELECT *
+        FROM company
+        WHERE company_name LIKE ?
+        """,('%'+search+'%',)).fetchall()
+
+    else:
+
+        companies = conn.execute("""
+        SELECT *
+        FROM company
+        """).fetchall()
 
     conn.close()
 
@@ -129,7 +141,6 @@ def admin_companies():
         "admin_companies.html",
         companies=companies
     )
-
 
 @app.route("/admin/approve_company/<int:id>")
 def approve_company(id):
@@ -148,22 +159,62 @@ def reject_company(id):
 
 @app.route("/admin/drives")
 def admin_drives():
+
     if session.get("role") != "admin":
         return redirect("/")
 
     conn = get_connection()
-    drives = drives = conn.execute("""
-SELECT 
-drive.id,
-drive.drive_uid,
-company.company_name,
-drive.job_title,
-drive.status
-FROM drive
-JOIN company ON drive.company_id = company.id
-""").fetchall()
-    return render_template("admin_drives.html", drives=drives)
 
+    drives = conn.execute("""
+
+    SELECT
+        drive.*,
+        company.company_name
+
+    FROM drive
+
+    JOIN company
+    ON company.id = drive.company_id
+
+    ORDER BY drive.id DESC
+
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_drives.html",
+        drives=drives
+    )
+@app.route("/admin/drive_details/<int:drive_id>")
+def admin_drive_details(drive_id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    drive = conn.execute("""
+
+    SELECT
+        drive.*,
+        company.company_name
+
+    FROM drive
+
+    JOIN company
+    ON company.id = drive.company_id
+
+    WHERE drive.id = ?
+
+    """,(drive_id,)).fetchone()
+
+    conn.close()
+
+    return render_template(
+        "admin_drive_details.html",
+        drive=drive
+    )
 @app.route("/admin/students")
 def admin_students():
 
@@ -205,19 +256,38 @@ def admin_applications():
     conn = get_connection()
 
     applications = conn.execute("""
-SELECT 
-application.application_uid,
-drive.drive_uid,
-student.student_uid,
-student.name,
-drive.job_title,
-company.company_name,
-application.status
-FROM application
-JOIN student ON student.id = application.student_id
-JOIN drive ON drive.id = application.drive_id
-JOIN company ON company.id = drive.company_id
-""").fetchall()
+
+    SELECT
+        application.application_uid,
+        application.applied_on,
+        application.status,
+
+        drive.drive_uid,
+        drive.job_title,
+        drive.status AS drive_status,
+        drive.is_deleted,
+
+        student.student_uid,
+        student.name,
+
+        company.company_name
+
+    FROM application
+
+    LEFT JOIN drive
+    ON drive.id = application.drive_id
+
+    LEFT JOIN student
+    ON student.id = application.student_id
+
+    LEFT JOIN company
+    ON company.id = drive.company_id
+
+    ORDER BY application.id DESC
+
+    """).fetchall()
+
+    conn.close()
 
     return render_template(
         "admin_applications.html",
@@ -226,11 +296,42 @@ JOIN company ON company.id = drive.company_id
 
     
 
-@app.route("/admin/approve_drive/<int:id>")
-def approve_drive(id):
+@app.route("/admin/approve_drive/<int:drive_id>")
+def approve_drive(drive_id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
     conn = get_connection()
-    conn.execute("UPDATE drive SET status='Approved' WHERE id=?", (id,))
+
+    conn.execute("""
+    UPDATE drive
+    SET status='Approved'
+    WHERE id=? AND is_deleted=0
+    """,(drive_id,))
+
     conn.commit()
+    conn.close()
+
+    return redirect("/admin/drives")
+
+@app.route("/admin/reject_drive/<int:drive_id>")
+def reject_drive(drive_id):
+
+    if session.get("role") != "admin":
+        return redirect("/")
+
+    conn = get_connection()
+
+    conn.execute("""
+    UPDATE drive
+    SET status='Rejected'
+    WHERE id=? AND is_deleted=0
+    """,(drive_id,))
+
+    conn.commit()
+    conn.close()
+
     return redirect("/admin/drives")
 
 @app.route("/admin/activate_student/<int:id>")
@@ -355,41 +456,8 @@ def admin_student_details(student_id):
         applications=applications
     )
 
-@app.route("/admin/drive/<int:drive_id>")
-def admin_drive_details(drive_id):
-
-    if session.get("role") != "admin":
-        return redirect("/")
-
-    conn = get_connection()
-
-    drive = conn.execute("""
-    SELECT drive.*, company.company_name
-    FROM drive
-    JOIN company ON company.id = drive.company_id
-    WHERE drive.id=?
-    """,(drive_id,)).fetchone()
-
-    applications = conn.execute("""
-    SELECT application.application_uid,
-           student.student_uid,
-           student.name,
-           application.status
-    FROM application
-    JOIN student ON student.id = application.student_id
-    WHERE application.drive_id=?
-    """,(drive_id,)).fetchall()
-
-    conn.close()
-
-    return render_template(
-        "admin_drive_details.html",
-        drive=drive,
-        applications=applications
-    )
-# ======================
 # COMPANY DASHBOARD
-# ======================
+
 @app.route("/register_company", methods=["GET","POST"])
 def register_company():
     if request.method == "POST":
@@ -422,22 +490,29 @@ def company_dashboard():
 
     conn = get_connection()
 
-    company = conn.execute(
-        "SELECT * FROM company WHERE id=?",
-        (company_id,)
-    ).fetchone()
+    # Company details
+    company = conn.execute("""
+    SELECT company_uid, company_name, email, website
+    FROM company
+    WHERE id=?
+    """,(company_id,)).fetchone()
 
-   
-    if company["is_active"] == 0:
-        conn.close()
-        return "Your company account has been blacklisted by admin."
-
+    # ACTIVE DRIVES
     drives = conn.execute("""
     SELECT drive.*,
-    (SELECT COUNT(*) FROM application 
+    (SELECT COUNT(*) FROM application
      WHERE application.drive_id = drive.id) AS applicants
     FROM drive
-    WHERE company_id = ?
+    WHERE company_id=? AND is_deleted=0
+    ORDER BY id DESC
+    """,(company_id,)).fetchall()
+
+    # DELETED DRIVES HISTORY
+    deleted_drives = conn.execute("""
+    SELECT *
+    FROM drive
+    WHERE company_id=? AND is_deleted=1
+    ORDER BY id DESC
     """,(company_id,)).fetchall()
 
     conn.close()
@@ -445,10 +520,9 @@ def company_dashboard():
     return render_template(
         "company_dashboard.html",
         company=company,
-        drives=drives
+        drives=drives,
+        deleted_drives=deleted_drives
     )
-
-
 @app.route("/create_drive",methods=["GET","POST"])
 def create_drive():
     if session.get("role")!="company":
@@ -508,16 +582,21 @@ def edit_drive(id):
     return render_template("edit_drive.html", drive=drive)
 
 
-@app.route("/company/delete_drive/<int:id>")
-def delete_drive(id):
+@app.route("/company/delete_drive/<int:drive_id>")
+def delete_drive(drive_id):
 
     if session.get("role") != "company":
         return redirect("/")
 
     conn = get_connection()
 
-    conn.execute("DELETE FROM drive WHERE id=?", (id,))
+    conn.execute(
+        "UPDATE drive SET is_deleted=1 WHERE id=?",
+        (drive_id,)
+    )
+
     conn.commit()
+    conn.close()
 
     return redirect("/company")
 
@@ -539,7 +618,28 @@ def close_drive(id):
 
     return redirect("/company")
 
+@app.route("/company/deleted_drives")
+def company_deleted_drives():
 
+    if session.get("role") != "company":
+        return redirect("/")
+
+    company_id = session["user_id"]
+
+    conn = get_connection()
+
+    drives = conn.execute("""
+    SELECT *
+    FROM drive
+    WHERE company_id=? AND is_deleted=1
+    """,(company_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "company_deleted_drives.html",
+        drives=drives
+    )
 
 @app.route("/company/edit_profile", methods=["GET","POST"])
 def company_edit_profile():
@@ -659,7 +759,6 @@ def reject_student(application_id):
 
 
 # STUDENT DASHBOARD
-# ======================
 
 @app.route("/register_student", methods=["GET","POST"])
 def register_student():
@@ -694,53 +793,58 @@ def student_dashboard():
 
     conn = get_connection()
 
-    # Get student info
+    # Student info (includes student_uid for display)
     student = conn.execute(
-        "SELECT * FROM student WHERE id=?",
+        "SELECT id, student_uid, name, email, phone, resume FROM student WHERE id=?",
         (student_id,)
     ).fetchone()
 
     # Available drives
     drives = conn.execute("""
-SELECT 
-    drive.id,
-    drive.drive_uid,
-    drive.job_title,
-    drive.eligibility,
-    drive.deadline,
-    drive.status,
-    company.company_name,
-    application.id AS applied
-FROM drive
-JOIN company ON company.id = drive.company_id
-LEFT JOIN application 
-    ON application.drive_id = drive.id 
-    AND application.student_id = ?
-WHERE drive.status='Approved'
-""",(student_id,)).fetchall()
+    SELECT 
+        drive.id,
+        drive.drive_uid,
+        drive.job_title,
+        drive.eligibility,
+        drive.deadline,
+        drive.status,
+        company.company_name,
+        application.id AS applied
+    FROM drive
+    JOIN company ON company.id = drive.company_id
+    LEFT JOIN application 
+        ON application.drive_id = drive.id 
+        AND application.student_id = ?
+    WHERE drive.status='Approved'
+    AND drive.is_deleted = 0
+    """,(student_id,)).fetchall()
 
     # Student applications
     applications = conn.execute("""
-    SELECT application.application_uid,
-           drive.job_title,
-           application.status,
-           application.applied_on
+    SELECT 
+        application.application_uid,
+        drive.job_title,
+        application.status,
+        application.applied_on
     FROM application
     JOIN drive ON drive.id = application.drive_id
     WHERE application.student_id=?
+    ORDER BY application.id DESC
     """,(student_id,)).fetchall()
 
     # Placement history
     history = conn.execute("""
-    SELECT application.application_uid,
-           drive.drive_uid,
-           company.company_name,
-           drive.job_title,
-           application.applied_on
+    SELECT 
+        application.application_uid,
+        drive.drive_uid,
+        company.company_name,
+        drive.job_title,
+        application.applied_on
     FROM application
     JOIN drive ON drive.id = application.drive_id
     JOIN company ON company.id = drive.company_id
-    WHERE application.student_id=? AND application.status='Selected'
+    WHERE application.student_id=? 
+    AND application.status='Selected'
     """,(student_id,)).fetchall()
 
     conn.close()
@@ -830,55 +934,51 @@ def edit_profile():
         "edit_profile.html",
         student=student
     )
-@app.route("/student/update_resume", methods=["POST"])
-def update_resume():
+@app.route("/upload_resume", methods=["POST"])
+def upload_resume():
 
     if session.get("role") != "student":
         return redirect("/")
+
+    file = request.files["resume"]
+
+    if file.filename == "":
+        return redirect("/student")
+
+    if not file.filename.endswith(".pdf"):
+        return "Only PDF resumes allowed"
 
     student_id = session["user_id"]
 
     conn = get_connection()
 
     student = conn.execute(
-        "SELECT resume FROM student WHERE id=?",
+        "SELECT student_uid FROM student WHERE id=?",
         (student_id,)
     ).fetchone()
 
-    file = request.files["resume"]
+    student_uid = student["student_uid"]
 
-    if file:
+    filename = f"Resume_{student_uid}.pdf"
 
-        # Allow only PDF
-        if not file.filename.endswith(".pdf"):
-            conn.close()
-            return "Only PDF resumes are allowed"
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
-        filename = f"S{student_id}.pdf"
-        path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
 
-        # delete old resume if exists
-        if student["resume"]:
-            old_path = os.path.join(app.config["UPLOAD_FOLDER"], student["resume"])
-            if os.path.exists(old_path):
-                os.remove(old_path)
+    conn.execute(
+        "UPDATE student SET resume=? WHERE id=?",
+        (filename, student_id)
+    )
 
-        file.save(path)
-
-        conn.execute("""
-        UPDATE student
-        SET resume=?
-        WHERE id=?
-        """,(filename,student_id))
-
-        conn.commit()
-
+    conn.commit()
     conn.close()
 
     return redirect("/student")
+
+    
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 if __name__=="__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5002)

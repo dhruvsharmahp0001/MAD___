@@ -46,19 +46,20 @@ CREATE TABLE IF NOT EXISTS company(
     is_active INTEGER DEFAULT 1
 )
 """)
-
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS drive(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        drive_uid TEXT UNIQUE,
-        company_id INTEGER,
-        job_title TEXT,
-        job_description TEXT,
-        eligibility TEXT,
-        deadline TEXT,
-        status TEXT DEFAULT 'Pending'
-    )
-    """)
+CREATE TABLE IF NOT EXISTS drive(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    drive_uid TEXT UNIQUE,
+    company_id INTEGER,
+    job_title TEXT,
+    job_description TEXT,
+    eligibility TEXT,
+    deadline TEXT,
+    status TEXT DEFAULT 'Pending',
+    is_deleted INTEGER DEFAULT 0,
+    FOREIGN KEY(company_id) REFERENCES company(id)
+)
+""")
 
     cur.execute("""CREATE TABLE IF NOT EXISTS application(
     id INTEGER PRIMARY KEY AUTOINCREMENT,

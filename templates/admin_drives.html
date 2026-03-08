@@ -4,61 +4,72 @@
 <h3>All Drives</h3>
 
 <table class="table table-bordered">
+
 <tr>
 <th>Drive ID</th>
 <th>Company</th>
 <th>Job</th>
 <th>Status</th>
+<th>Company Drive Status</th>
 <th>Action</th>
 <th>Description</th>
 </tr>
 
 {% for d in drives %}
+
 <tr>
+
 <td>{{ d.drive_uid }}</td>
 <td>{{ d.company_name }}</td>
 <td>{{ d.job_title }}</td>
+
 <td>{{ d.status }}</td>
+
+<td>
+
+{% if d.is_deleted == 1 %}
+Deleted
+{% elif d.status == "Closed" %}
+Closed
+{% else %}
+Ongoing
+{% endif %}
+
+</td>
+
 <td>
 
 {% if d.status == "Pending" %}
 
-<a href="/admin/approve_drive/{{ d.id }}" 
-class="btn btn-success btn-sm">
-Approve
-</a>
-
-<a href="/admin/reject_drive/{{ d.id }}" 
-class="btn btn-danger btn-sm">
-Reject
-</a>
+<a href="/admin/approve_drive/{{ d.id }}" class="btn btn-success btn-sm">Approve</a>
+<a href="/admin/reject_drive/{{ d.id }}" class="btn btn-danger btn-sm">Reject</a>
 
 {% elif d.status == "Approved" %}
 
-<span class="badge bg-success">
-Approved
-</span>
+<a href="/admin/reject_drive/{{ d.id }}" class="btn btn-danger btn-sm">Reject</a>
 
-{% elif d.status == "Closed" %}
+{% elif d.status == "Rejected" %}
 
-<span class="badge bg-dark">
-Closed
-</span>
+<a href="/admin/approve_drive/{{ d.id }}" class="btn btn-success btn-sm">Approve</a>
 
 {% endif %}
 
 </td>
+
 <td>
-<a href="/admin/drive/{{ d.id }}" class="btn btn-info btn-sm">
+
+<a href="/admin/drive_details/{{ d.id }}" class="btn btn-info btn-sm">
 View Details
 </a>
+
 </td>
+
 </tr>
+
 {% endfor %}
 
 </table>
-<a href="/admin" class="btn btn-secondary mt-3">
-Back
-</a>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
 
 {% endblock %}
